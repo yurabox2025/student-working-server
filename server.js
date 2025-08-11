@@ -71,6 +71,20 @@ app.get("/data", async (_req, res) => {
   res.json(rows);
 });
 
+app.post("/admin/clear", async (req, res) => {
+  try {
+    const token = req.headers["x-admin-token"] || req.query.token;
+    if (!token || token !== process.env.ADMIN_TOKEN) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    await pool.query("TRUNCATE TABLE form_data RESTART IDENTITY;");
+    res.json({ success: true, message: "База очищена" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () =>
   console.log(`Server started at http://localhost:${PORT}`)
